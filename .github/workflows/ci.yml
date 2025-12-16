@@ -4,12 +4,18 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rid: ["win-x64", "linux-x64"]
     steps:
       - uses: actions/checkout@v4
-      - name: build using gcc
-        run: gcc -Wall -Werror main.c -o program
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet restore
+      - run: dotnet publish -o app -r ${{ matrix.rid }} --sc /p:PublishSingleFile=true
       - name: Archive production artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: program
-          path: program
+          name: app-${{ matrix.rid }}
+          path: app/
